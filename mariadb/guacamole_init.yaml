@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   mariaDbRef:
-    name: mariadb
+    name: mariadb-min
   inheritMetadata:
     labels:
       sidecar.istio.io/inject: "false"
@@ -17,13 +17,11 @@ spec:
   database: data-test
   sql: |
     CREATE TABLE `guacamole_connection_group` (
-
       `connection_group_id`   int(11)      NOT NULL AUTO_INCREMENT,
       `parent_id`             int(11),
       `connection_group_name` varchar(128) NOT NULL,
       `type`                  enum('ORGANIZATIONAL',
                                   'BALANCING') NOT NULL DEFAULT 'ORGANIZATIONAL',
-
       -- Concurrency limits
       `max_connections`          int(11),
       `max_connections_per_user` int(11),
