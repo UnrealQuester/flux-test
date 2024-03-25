@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacamole
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: guacamole
+  template:
+    metadata:
+      labels:
+        app: guacamole
+    spec:
+      volumes:
+        - name: guac-recordings
+          persistentVolumeClaim:
+            claimName: guac-recordings
+      initContainers:
+        - name: changeowner
+          image: busybox
+          command: ["sh", "-c", "chmod -R 2750 /opt/guac-recordings && chown -R 1000:1001 /opt/guac-recordings"]   
+          volumeMounts:
+          - name: guac-recordings
+            mountPath: /opt/guac-recordings
+      containers:
+        - image: guacamole/guacamole
+          name: guacamole
+          ports:
+          - containerPort: 8080
+          env:
+            - name: GUACD_HOSTNAME
+              value: "guacd"
+            - name: GUACD_PORT
+              value: "4822"
+            - name: MYSQL_HOSTNAME
+              value: "mariadb-min-maxscale"
+            - name: MYSQL_USER
+              value: "user"
+            - name: MYSQL_PASSWORD
+              value: "user"
+            - name: MYSQL_DATABASE
+              value: "data-test"
+            - name: RECORDING_SEARCH_PATH
+              value: "/opt/guac-recordings"
+          volumeMounts:
+            - name: guac-recordings
+              mountPath: /opt/guac-recordings
+        - image: guacamole/guacd
+          name: guacd
+          ports:
+            - containerPort: 4822
+          volumeMounts:
+            - name: guac-recordings
+              mountPath: /opt/guac-recordings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacamole
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: guacamole
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacd
+spec:
+  ports:
+  - port: 4822
+    targetPort: 4822
+  selector:
+    app: guacamole
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: guac-recordings
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
