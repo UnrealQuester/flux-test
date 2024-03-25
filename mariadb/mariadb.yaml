@@ -2,6 +2,7 @@ apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
   name: mariadb-min
+  namespace: default
 spec:
   replicas: 3
   maxScale:
@@ -15,6 +16,7 @@ apiVersion: k8s.mariadb.com/v1alpha1
 kind: Database
 metadata:
   name: data-test
+  namespace: default
 spec:
   # If you want the database to be created with a different name than the resource name
   # name: data-custom
@@ -29,6 +31,7 @@ apiVersion: k8s.mariadb.com/v1alpha1
 kind: Grant
 metadata:
   name: grant
+  namespace: default
 spec:
   mariaDbRef:
     name: mariadb-min
@@ -46,6 +49,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: user
+  namespace: default
 data:
   password: dXNlcg==
 ---
@@ -53,6 +57,7 @@ apiVersion: k8s.mariadb.com/v1alpha1
 kind: User
 metadata:
   name: user
+  namespace: default
 spec:
   # If you want the user to be created with a different name than the resource name
   # name: user-custom
